@@ -10,7 +10,7 @@
             ref="emailRef"
             filled
             autofocus
-            type="email"
+            type="email" // erez testing
             label="Email"
             class="q-my-sm"
           />
