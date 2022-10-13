@@ -8,6 +8,8 @@ Enter your main life events and find people who share the same events like you.
 We collect the email, password (encrypted) and life events as entered by the user. This data won't be sold nor shared with any 3rd party. When searching for other people, their private information is not disclosed. The user is able to ask for a connection request and his email will be visible to the other side.
 
 ## Contribution
+The client side is developed using Quasar framework which is based on Vue3, you can find more information here: https://quasar.dev/
+
 Feel free to contribute in any way you like. If you have an idea but are familiar only with the client/server side, please share this idea with me. Following are some ideas to begin with:
 1. Search based on age, not years.
 2. When contacting someone, add the number of shared events between them.
