@@ -6,7 +6,7 @@
           WhatsNext
         </q-toolbar-title>
 
-        <div>v0.01</div>
+        <div>v0.1.0</div>
       </q-toolbar>
     </q-header>
 

@@ -37,9 +37,11 @@
           <q-icon
             size="sm"
             class="q-my-xs q-mx-xs cursor-pointer"
-            name="delete_forever"
-            @click="deleteEvent(event.id)"
-            ><q-tooltip>Delete this event</q-tooltip></q-icon
+            :name="event.event_name === 'Birth' ? 'edit' : 'delete_forever'"
+            @click="handleEvent(event.event_name, event.id)"
+            ><q-tooltip>{{
+              event.event_name === 'Birth' ? 'Edit' : 'Delete this event'
+            }}</q-tooltip></q-icon
           >
         </template>
       </q-timeline-entry>
@@ -48,7 +50,7 @@
       <q-spinner-gears size="50px" color="primary" />
     </q-inner-loading>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="add" color="accent" @click="addEvent()"
+      <q-btn fab icon="add" color="accent" @click="addEventPopupShow = true"
         ><q-tooltip>Add an event</q-tooltip></q-btn
       >
     </q-page-sticky>
@@ -73,6 +75,7 @@
           option-value="id"
           option-label="event_name"
           class="q-my-sm"
+          :option-disable="(opt) => opt.id === 1"
           autofocus
         >
           <template v-slot:before>
@@ -187,6 +190,61 @@ export default defineComponent({
     goSearch() {
       this.router.push({ name: 'search' });
     },
+    handleEvent(eventName: string, eventId: number) {
+      if (eventName !== 'Birth') this.deleteEvent(eventId);
+      else this.editBirthEvent();
+    },
+    editBirthEvent() {
+      this.$q
+        .dialog({
+          title: 'Update your birthdate',
+          message: 'What is your birthdate (yyyy-mm-dd)?',
+          prompt: {
+            model: '',
+            type: 'text',
+          },
+          cancel: true,
+        })
+        .onOk((data) => {
+          if (isNaN(Date.parse(data))) {
+            this.$q.notify({
+              message: 'You entered an invalid date',
+            });
+          } else {
+            api
+              .put(
+                '/user/birthdate',
+                { birthDate: data },
+                {
+                  headers: {
+                    Authorization: `Bearer ${this.store.token}`,
+                  },
+                }
+              )
+              .then((response) => {
+                if (response.data.error) {
+                  this.$q.notify({
+                    message: response.data.error,
+                  });
+                } else {
+                  this.$q.notify({
+                    message: 'Your birthdate was updated',
+                  });
+                  this.getLifeEvents();
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+                const err = error.response?.data
+                  ? error.response?.data.error
+                  : error.message;
+                this.$q.notify({
+                  message: err,
+                });
+              });
+          }
+        });
+    },
     deleteEvent(eventId: number) {
       this.$q
         .dialog({
@@ -212,8 +270,8 @@ export default defineComponent({
             })
             .catch((error) => {
               console.log(error);
-              const err = error.response.data
-                ? error.response.data.error
+              const err = error.response?.data
+                ? error.response?.data.error
                 : error.message;
               this.$q.notify({
                 message: err,
@@ -260,8 +318,8 @@ export default defineComponent({
           })
           .catch((error) => {
             console.log(error);
-            const err = error.response.data
-              ? error.response.data.error
+            const err = error.response?.data
+              ? error.response?.data.error
               : error.message;
             this.$q.notify({
               message: err,
@@ -277,7 +335,7 @@ export default defineComponent({
         ')'
       );
     },
-    addEvent() {
+    getAllEvents() {
       api
         .get('/event/all', {
           headers: {
@@ -291,13 +349,12 @@ export default defineComponent({
             });
           } else {
             this.eventNameOptions = response.data;
-            this.addEventPopupShow = true;
           }
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,
@@ -326,8 +383,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,
@@ -352,8 +409,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,
@@ -372,40 +429,50 @@ export default defineComponent({
           cancel: true,
         })
         .onOk((data) => {
-          api
-            .put(
-              '/user/name',
-              { full_name: data },
-              {
-                headers: {
-                  Authorization: `Bearer ${this.store.token}`,
-                },
-              }
-            )
-            .then((response) => {
-              if (response.data.error) {
-                this.$q.notify({
-                  message: response.data.error,
-                });
-              } else {
-                this.getFullName();
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-              const err = error.response.data
-                ? error.response.data.error
-                : error.message;
-              this.$q.notify({
-                message: err,
-              });
+          if (data.trim() === '') {
+            this.$q.notify({
+              message: 'Your name was missing',
             });
+          } else {
+            api
+              .put(
+                '/user/name',
+                { full_name: data },
+                {
+                  headers: {
+                    Authorization: `Bearer ${this.store.token}`,
+                  },
+                }
+              )
+              .then((response) => {
+                if (response.data.error) {
+                  this.$q.notify({
+                    message: response.data.error,
+                  });
+                } else {
+                  this.$q.notify({
+                    message: 'Your name was updated',
+                  });
+                  this.getFullName();
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+                const err = error.response?.data
+                  ? error.response?.data.error
+                  : error.message;
+                this.$q.notify({
+                  message: err,
+                });
+              });
+          }
         });
     },
   },
   mounted() {
     this.getLifeEvents();
     this.getFullName();
+    this.getAllEvents();
   },
 });
 </script>

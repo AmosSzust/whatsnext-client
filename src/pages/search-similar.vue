@@ -163,8 +163,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,
@@ -235,8 +235,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,

@@ -200,7 +200,7 @@ export default defineComponent({
         .post(`/user/${command}`, {
           email: this.email,
           password: this.password,
-          confirmationCode: this.codeSent ? this.confirmationCode : undefined,
+          confirmationCode: this.codeSent ? this.confirmationCode.trim() : undefined,
           birthDate: this.codeSent ? this.birthDate : undefined,
         })
         .then((response) => {
@@ -228,7 +228,7 @@ export default defineComponent({
         .catch((err) => {
           console.log('error:', err);
           this.disableLetMeIn = false;
-          const msg = err.response.data ? err.response.data.error : err.message;
+          const msg = err.response?.data ? err.response?.data.error : err.message;
           this.$q.notify({
             message: msg,
             color: 'purple',

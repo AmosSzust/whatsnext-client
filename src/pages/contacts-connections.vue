@@ -5,7 +5,7 @@
       name="arrow_back_ios"
       @click="goBack()"
       ><q-tooltip>Back</q-tooltip></q-icon
-    >Your connection requests <q-icon name="refresh" size="sm" @click="getContactsList()"><q-tooltip>Refresh</q-tooltip></q-icon>
+    >Your connection requests <q-icon class="cursor-pointer" name="refresh" size="sm" @click="getContactsList()"><q-tooltip>Refresh</q-tooltip></q-icon>
     <q-list v-show="doneLoading">
       <q-item v-for="item in contactsList" v-bind:key="item.id">
         <q-item-section>
@@ -20,7 +20,7 @@
           <q-item-label caption>{{
             showContactTime(item.contact_when)
           }}</q-item-label>
-          <q-icon name="email" />
+          <q-icon class="cursor-pointer" name="email" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -77,8 +77,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.log(error);
-          const err = error.response.data
-            ? error.response.data.error
+          const err = error.response?.data
+            ? error.response?.data.error
             : error.message;
           this.$q.notify({
             message: err,
