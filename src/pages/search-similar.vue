@@ -180,7 +180,7 @@ export default defineComponent({
       this.searchSimilar();
     },
     diffYears(dt2: Date, dt1: Date) {
-      var diff = (dt2.getTime() - dt1.getTime()) / 1000 / 60 / 60 / 24;
+      const diff = (dt2.getTime() - dt1.getTime()) / 1000 / 60 / 60 / 24;
       return Math.trunc(diff / 365.25);
     },
     ageFromBirth(eventWhen: Date): number {

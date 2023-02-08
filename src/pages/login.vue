@@ -117,12 +117,12 @@
 </template>
 
 <script lang="ts">
-import { api } from '../boot/axios';
+import { api } from 'boot/axios';
 import { defineComponent } from 'vue';
 import { ref } from 'vue';
 import { QInput } from 'quasar';
 import { useRouter } from 'vue-router';
-import { whatsnextStore } from '../stores/whatsnextStore';
+import { whatsnextStore } from 'stores/whatsnextStore';
 
 export default defineComponent({
   name: 'loginPage',

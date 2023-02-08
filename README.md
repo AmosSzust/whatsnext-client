@@ -13,8 +13,8 @@ We collect the email, password (encrypted) and life events as entered by the use
 
 In src/boot/axios.ts you can set the server you'll work with:
 
-- const baseURLDev = 'http://localhost:3000/api/'; >>> Works locally, you will need to setup the server locally
-- const baseURLProd = 'https://stockdiv.com:8447/api'; >>> Works against the remote server. If you added a new client functionality that requires a new server functionality, it might not work.
+- const baseURL = 'http://localhost:3000/api/'; >>> Works locally, you will need to setup the server locally
+- const baseURL = 'https://stockdiv.com:8447/api'; >>> Works against the remote server. If you added a new client functionality that requires a new server functionality, it might not work.
 
 When opening the client in the browser, make sure to browse to localhost:8080/#/login
 
