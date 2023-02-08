@@ -89,7 +89,6 @@
 
           <div class="row justify-center">
             <q-btn
-              class=""
               push
               color="primary"
               text-color="white"
