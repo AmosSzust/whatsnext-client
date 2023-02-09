@@ -2,9 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
-        <q-toolbar-title>
-          WhatsNext
-        </q-toolbar-title>
+        <q-toolbar-title> WhatsNext </q-toolbar-title>
 
         <div>v0.1.0</div>
       </q-toolbar>
@@ -22,13 +20,10 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'MainLayout',
 
-  components: {    
+  components: {},
+
+  setup() {
+    return {};
   },
-
-  setup () {
-    return {
-
-    }
-  }
 });
 </script>

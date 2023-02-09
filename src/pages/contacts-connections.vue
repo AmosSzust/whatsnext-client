@@ -5,13 +5,20 @@
       name="arrow_back_ios"
       @click="goBack()"
       ><q-tooltip>Back</q-tooltip></q-icon
-    >Your connection requests <q-icon class="cursor-pointer" name="refresh" size="sm" @click="getContactsList()"><q-tooltip>Refresh</q-tooltip></q-icon>
+    >Your connection requests
+    <q-icon
+      class="cursor-pointer"
+      name="refresh"
+      size="sm"
+      @click="getContactsList()"
+      ><q-tooltip>Refresh</q-tooltip></q-icon
+    >
     <q-list v-show="doneLoading">
       <q-item v-for="item in contactsList" v-bind:key="item.id">
         <q-item-section>
           <q-item-label> {{ item.full_name }} </q-item-label>
           <q-item-label caption lines="2"
-            >Wants to connect. You can contact them via email 
+            >Wants to connect. You can contact them via email
             <a :href="`mailto:${item.email}`">{{ item.email }}</a></q-item-label
           >
         </q-item-section>
@@ -47,7 +54,7 @@ export default defineComponent({
       router,
       store,
       contactsList: ref<IContact[]>([]),
-      doneLoading: ref<boolean>(false)
+      doneLoading: ref<boolean>(false),
     };
   },
   methods: {
