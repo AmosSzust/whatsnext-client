@@ -22,8 +22,7 @@ When opening the client in the browser, make sure to browse to localhost:8080/#/
 
 The client side is developed using Quasar framework which is based on Vue3, you can find more information here: https://quasar.dev/
 
-Feel free to contribute in any way you like. If you have an idea, but you're only familiar with the client or server side, please share this idea with me and we'll coordinate the development together.
-You can see several ideas to start with: https://github.com/AmosSzust/whatsnext-client/discussions/2
+Feel free to contribute in any way you like. If you're only familiar with the client or server side, please share this idea with me to coordinate the development together. Several ideas to start with: https://github.com/AmosSzust/whatsnext-client/discussions/2
 
 The server side of WhatsNext can be found here: https://github.com/AmosSzust/whatsnext-server
 
