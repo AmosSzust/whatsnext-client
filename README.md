@@ -22,13 +22,8 @@ When opening the client in the browser, make sure to browse to localhost:8080/#/
 
 The client side is developed using Quasar framework which is based on Vue3, you can find more information here: https://quasar.dev/
 
-Feel free to contribute in any way you like. If you have an idea but you're only familiar with the client or server side, please share this idea with me and we'll coordinate the development together. Following are some ideas to start with:
-
-1. Search based on age, not years.
-2. When contacting someone, add the number of shared events between them.
-3. If already contacted today, prevent re-sending a contact request.
-4. Change project name to SimilarMe?
-5. Add if/when the user contacted the similar person
+Feel free to contribute in any way you like. If you have an idea, but you're only familiar with the client or server side, please share this idea with me and we'll coordinate the development together.
+You can see several ideas to start with: https://github.com/AmosSzust/whatsnext-client/discussions/2
 
 The server side of WhatsNext can be found here: https://github.com/AmosSzust/whatsnext-server
 

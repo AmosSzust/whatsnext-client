@@ -53,7 +53,7 @@
       /><br />
       Due to privacy, the other side's information is not disclosed. You can ask
       to connect via email.<br /><b
-        >Notice: In this case, your name/email will be visible to the other
+        >Notice: When asking to connect, your name/email will be visible to the other
         side.</b
       >
     </q-form>
@@ -140,15 +140,7 @@ export default defineComponent({
     sendContact() {
       api
         .post(
-          `/contact/${this.events[0].id}/0`,
-          {},
-          {
-            //TODO: shared events count
-            headers: {
-              Authorization: `Bearer ${this.store.token}`,
-            },
-          }
-        )
+          `/contact/${this.events[0].id}/0`)
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({
@@ -207,13 +199,7 @@ export default defineComponent({
       let page = this.resultId === 0 ? 0 : this.availableIds[this.resultId];
       api
         .get(
-          `/user/similar?yearsDifference=${this.yearsDifference}&numberOfEvents=${this.numberOfEvents}&basedOn=${this.searchBasedOn}&resultId=${page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${this.store.token}`,
-            },
-          }
-        )
+          `/user/similar?yearsDifference=${this.yearsDifference}&numberOfEvents=${this.numberOfEvents}&basedOn=${this.searchBasedOn}&resultId=${page}`)
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({

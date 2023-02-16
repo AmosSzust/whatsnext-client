@@ -152,9 +152,10 @@ export default defineComponent({
     const router = useRouter();
     const store = whatsnextStore();
     let eventNameOptions: string[] = [];
-    let birthDate: Date = new Date();
+    let birthDate = ref(new Date());
     function eventOptions(date: string) {
       return (
+        date >= birthDate.value.toISOString().substring(0, 10).replace(/-/g, '/') &&
         date <= new Date().toISOString().substring(0, 10).replace(/-/g, '/')
       );
     }
@@ -175,7 +176,6 @@ export default defineComponent({
   },
   computed: {
     age(): number {
-      //return date.getDateDiff(new Date(this.eventWhen),this.birthDate,'years');
       return this.diffYears(new Date(this.eventWhen), this.birthDate);
     },
   },
@@ -214,13 +214,7 @@ export default defineComponent({
             api
               .put(
                 '/user/birthdate',
-                { birthDate: data },
-                {
-                  headers: {
-                    Authorization: `Bearer ${this.store.token}`,
-                  },
-                }
-              )
+                { birthDate: data })
               .then((response) => {
                 if (response.data.error) {
                   this.$q.notify({
@@ -254,11 +248,7 @@ export default defineComponent({
         })
         .onOk(() => {
           api
-            .delete(`/event/${eventId}`, {
-              headers: {
-                Authorization: `Bearer ${this.store.token}`,
-              },
-            })
+            .delete(`/event/${eventId}`)
             .then((response) => {
               if (response.data.error) {
                 this.$q.notify({
@@ -280,7 +270,6 @@ export default defineComponent({
         });
     },
     ageFromBirth(eventWhen: Date): number {
-      //return date.getDateDiff(eventWhen, this.birthDate, 'years');
       return this.diffYears(new Date(eventWhen), this.birthDate);
     },
     addEventToUser() {
@@ -296,13 +285,7 @@ export default defineComponent({
               id: this.eventData?.id,
               description: this.notes,
               event_when: this.eventWhen,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${this.store.token}`,
-              },
-            }
-          )
+            })
           .then((response) => {
             if (response.data.error) {
               this.$q.notify({
@@ -337,11 +320,7 @@ export default defineComponent({
     },
     getAllEvents() {
       api
-        .get('/event/all', {
-          headers: {
-            Authorization: `Bearer ${this.store.token}`,
-          },
-        })
+        .get('/event/all')
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({
@@ -363,11 +342,7 @@ export default defineComponent({
     },
     getLifeEvents() {
       api
-        .get('/event', {
-          headers: {
-            Authorization: `Bearer ${this.store.token}`,
-          },
-        })
+        .get('/event')
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({
@@ -393,11 +368,7 @@ export default defineComponent({
     },
     getFullName() {
       api
-        .get('/user/name', {
-          headers: {
-            Authorization: `Bearer ${this.store.token}`,
-          },
-        })
+        .get('/user/name')
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({
@@ -437,13 +408,7 @@ export default defineComponent({
             api
               .put(
                 '/user/name',
-                { full_name: data },
-                {
-                  headers: {
-                    Authorization: `Bearer ${this.store.token}`,
-                  },
-                }
-              )
+                { full_name: data })
               .then((response) => {
                 if (response.data.error) {
                   this.$q.notify({

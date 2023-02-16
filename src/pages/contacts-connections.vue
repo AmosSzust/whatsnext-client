@@ -67,11 +67,7 @@ export default defineComponent({
     getContactsList() {
       this.doneLoading = false;
       api
-        .get('/contact', {
-          headers: {
-            Authorization: `Bearer ${this.store.token}`,
-          },
-        })
+        .get('/contact',)
         .then((response) => {
           if (response.data.error) {
             this.$q.notify({
