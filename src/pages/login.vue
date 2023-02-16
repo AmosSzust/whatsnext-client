@@ -123,6 +123,7 @@ import { ref } from 'vue';
 import { QInput } from 'quasar';
 import { useRouter } from 'vue-router';
 import { whatsnextStore } from 'stores/whatsnextStore';
+import {showAPIError, showNotification, validateEmail} from 'src/utils/utils';
 
 export default defineComponent({
   name: 'loginPage',
@@ -181,63 +182,45 @@ export default defineComponent({
       }, 250);
     },
     letMeIn() {
-      if (this.password.length < 8) {
-        this.$q.notify({
-          message: 'Password must have at least 8 characters',
-          color: 'purple',
-        });
-        return;
+      if (!validateEmail(this.email)) {
+        showNotification('Invalid email');
+      } else if (this.password.length < 8) {
+        showNotification('Password must have at least 8 characters');
       } else if (this.newUser && this.password !== this.rePassword) {
-        this.$q.notify({
-          message: 'Passwords do not match',
-          color: 'purple',
-        });
-        return;
-      }
-      const command = this.codeSent || !this.newUser ? 'login' : 'register';
-      this.disableLetMeIn = true;
-      api
-        .post(`/user/${command}`, {
-          email: this.email,
-          password: this.password,
-          confirmationCode: this.codeSent
-            ? this.confirmationCode.trim()
-            : undefined,
-          birthDate: this.codeSent ? this.birthDate : undefined,
-        })
-        .then((response) => {
-          this.disableLetMeIn = false;
-          if (response.data.result || response.data.token) {
-            if (response.data.result) {
-              this.codeSent = true;
-              setTimeout(() => {
-                this.confirmationCodeRef?.focus();
-              }, 500);
+        showNotification('Passwords do not match');
+      } else {
+        const command = this.codeSent || !this.newUser ? 'login' : 'register';
+        this.disableLetMeIn = true;
+        api
+          .post(`/user/${command}`, {
+            email: this.email,
+            password: this.password,
+            confirmationCode: this.codeSent
+              ? this.confirmationCode.trim()
+              : undefined,
+            birthDate: this.codeSent ? this.birthDate : undefined,
+          })
+          .then((response) => {
+            this.disableLetMeIn = false;
+            if (response.data.result || response.data.token) {
+              if (response.data.result) {
+                this.codeSent = true;
+                setTimeout(() => {
+                  this.confirmationCodeRef?.focus();
+                }, 500);
+              } else {
+                const store = whatsnextStore();
+                store.token = response.data.token;
+                this.router.push({name: 'timeline'});
+              }
             } else {
-              const store = whatsnextStore();
-              store.token = response.data.token;
-              this.router.push({ name: 'timeline' });
+              showNotification(response.data.error? response.data.error : 'Oops, there was a problem');
             }
-          } else {
-            this.$q.notify({
-              message: response.data.error
-                ? response.data.error
-                : 'Oops, there was a problem',
-              color: 'purple',
-            });
-          }
-        })
-        .catch((err) => {
-          console.log('error:', err);
-          this.disableLetMeIn = false;
-          const msg = err.response?.data
-            ? err.response?.data.error
-            : err.message;
-          this.$q.notify({
-            message: msg,
-            color: 'purple',
+          })
+          .catch((err) => {
+            showAPIError(err);
           });
-        });
+      }
     },
   },
 });

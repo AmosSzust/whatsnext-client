@@ -1,7 +1,6 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="column q-pa-md items-center">
     <div class="row">
-      <div class="text-weight-bold">Hello {{ full_name }},</div>
       <q-icon
         class="q-mx-xs cursor-pointer"
         name="edit"
@@ -24,22 +23,21 @@
         ><q-tooltip>View connection requests</q-tooltip></q-icon
       >
     </div>
-    <q-timeline color="secondary" v-if="finishedLoading">
+    <q-timeline color="secondary" v-if="finishedLoading" layout="loose">
       <q-timeline-entry
         v-for="event in events"
         :key="event.id"
-        :title="event.event_name"
+        :subtitle="getEventDate(event.event_when)"
         :icon="event.icon_name"
         :body="event.description"
       >
-        <template v-slot:subtitle>
-          {{ getEventDate(event.event_when) }}
+        <template v-slot:title>
+          {{ event.event_name }}
           <q-icon
-            size="sm"
-            class="q-my-xs q-mx-xs cursor-pointer"
+            class="q-mb-xs q-mx-xs cursor-pointer"
             :name="event.event_name === 'Birth' ? 'edit' : 'delete_forever'"
             @click="handleEvent(event.event_name, event.id)"
-            ><q-tooltip>{{
+          ><q-tooltip>{{
               event.event_name === 'Birth' ? 'Edit' : 'Delete this event'
             }}</q-tooltip></q-icon
           >
@@ -145,6 +143,7 @@ import { defineComponent, ref } from 'vue';
 import { date } from 'quasar';
 import { ILifeEvent } from 'src/models/interfaces/ILifeEvent';
 import { useRouter } from 'vue-router';
+import {bus, showAPIError, showNotification} from 'src/utils/utils';
 export default defineComponent({
   name: 'time-line',
 
@@ -207,9 +206,7 @@ export default defineComponent({
         })
         .onOk((data) => {
           if (isNaN(Date.parse(data))) {
-            this.$q.notify({
-              message: 'You entered an invalid date',
-            });
+            showNotification('You entered an invalid date');
           } else {
             api
               .put(
@@ -217,24 +214,14 @@ export default defineComponent({
                 { birthDate: data })
               .then((response) => {
                 if (response.data.error) {
-                  this.$q.notify({
-                    message: response.data.error,
-                  });
+                  showNotification(response.data.error);
                 } else {
-                  this.$q.notify({
-                    message: 'Your birthdate was updated',
-                  });
+                  showNotification('Your birthdate was updated');
                   this.getLifeEvents();
                 }
               })
-              .catch((error) => {
-                console.log(error);
-                const err = error.response?.data
-                  ? error.response?.data.error
-                  : error.message;
-                this.$q.notify({
-                  message: err,
-                });
+              .catch((err) => {
+                showAPIError(err);
               });
           }
         });
@@ -251,21 +238,13 @@ export default defineComponent({
             .delete(`/event/${eventId}`)
             .then((response) => {
               if (response.data.error) {
-                this.$q.notify({
-                  message: response.data.error,
-                });
+                showNotification(response.data.error);
               } else {
                 this.getLifeEvents();
               }
             })
-            .catch((error) => {
-              console.log(error);
-              const err = error.response?.data
-                ? error.response?.data.error
-                : error.message;
-              this.$q.notify({
-                message: err,
-              });
+            .catch((err) => {
+              showAPIError(err);
             });
         });
     },
@@ -274,9 +253,7 @@ export default defineComponent({
     },
     addEventToUser() {
       if (this.eventData == null) {
-        this.$q.notify({
-          message: 'Please select a life event',
-        });
+        showNotification('Please select a life event');
       } else {
         api
           .post(
@@ -288,9 +265,7 @@ export default defineComponent({
             })
           .then((response) => {
             if (response.data.error) {
-              this.$q.notify({
-                message: response.data.error,
-              });
+              showNotification(response.data.error);
             } else {
               this.addEventPopupShow = false;
               this.eventData = null;
@@ -299,14 +274,8 @@ export default defineComponent({
               this.getLifeEvents();
             }
           })
-          .catch((error) => {
-            console.log(error);
-            const err = error.response?.data
-              ? error.response?.data.error
-              : error.message;
-            this.$q.notify({
-              message: err,
-            });
+          .catch((err) => {
+            showAPIError(err);
           });
       }
     },
@@ -323,21 +292,13 @@ export default defineComponent({
         .get('/event/all')
         .then((response) => {
           if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
+            showNotification(response.data.error);
           } else {
             this.eventNameOptions = response.data;
           }
         })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
+        .catch((err) => {
+          showAPIError(err);
         });
     },
     getLifeEvents() {
@@ -345,9 +306,7 @@ export default defineComponent({
         .get('/event')
         .then((response) => {
           if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
+            showNotification(response.data.error);
           } else {
             this.events = response.data;
             this.birthDate = new Date(
@@ -356,36 +315,8 @@ export default defineComponent({
             this.finishedLoading = true;
           }
         })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
-        });
-    },
-    getFullName() {
-      api
-        .get('/user/name')
-        .then((response) => {
-          if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
-          } else {
-            this.full_name = response.data.full_name;
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
+        .catch((err) => {
+          showAPIError(err);
         });
     },
     setFullName() {
@@ -401,9 +332,7 @@ export default defineComponent({
         })
         .onOk((data) => {
           if (data.trim() === '') {
-            this.$q.notify({
-              message: 'Your name was missing',
-            });
+            showNotification('Your name is missing');
           } else {
             api
               .put(
@@ -411,24 +340,14 @@ export default defineComponent({
                 { full_name: data })
               .then((response) => {
                 if (response.data.error) {
-                  this.$q.notify({
-                    message: response.data.error,
-                  });
+                  showNotification(response.data.error);
                 } else {
-                  this.$q.notify({
-                    message: 'Your name was updated',
-                  });
-                  this.getFullName();
+                  showNotification('Your name was updated');
+                  bus.emit('updateFullName');
                 }
               })
-              .catch((error) => {
-                console.log(error);
-                const err = error.response?.data
-                  ? error.response?.data.error
-                  : error.message;
-                this.$q.notify({
-                  message: err,
-                });
+              .catch((err) => {
+                showAPIError(err);
               });
           }
         });
@@ -436,7 +355,6 @@ export default defineComponent({
   },
   mounted() {
     this.getLifeEvents();
-    this.getFullName();
     this.getAllEvents();
   },
 });

@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="column q-pa-md items-center">
     <q-icon
       class="q-my-xs q-mx-xs cursor-pointer"
       name="arrow_back_ios"
@@ -106,6 +106,7 @@ import { whatsnextStore } from 'src/stores/whatsnextStore';
 import { IEvent } from 'src/models/interfaces/IEvent';
 import { SearchBasedOnEnum } from 'src/models/enums/SearchBasedOnEnum';
 import { date } from 'quasar';
+import {showAPIError, showNotification} from 'src/utils/utils';
 
 export default defineComponent({
   name: 'search-similar',
@@ -129,9 +130,7 @@ export default defineComponent({
   watch: {
     searchBasedOn() {
       if (this.searchBasedOn === SearchBasedOnEnum.AGE) {
-        this.$q.notify({
-          message: 'Not implemented yet',
-        });
+        showNotification('Not implemented yet');
         this.searchBasedOn = SearchBasedOnEnum.YEAR;
       }
     },
@@ -143,24 +142,13 @@ export default defineComponent({
           `/contact/${this.events[0].id}/0`)
         .then((response) => {
           if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
+            showNotification(response.data.error);
           } else {
-            this.$q.notify({
-              message:
-                "Your request was sent, now it's up to the other side to contact you",
-            });
+            showNotification("Your request was sent, now it's up to the other side whether to reply");
           }
         })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
+        .catch((err) => {
+          showAPIError(err);
         });
     },
     previousResult() {
@@ -202,33 +190,22 @@ export default defineComponent({
           `/user/similar?yearsDifference=${this.yearsDifference}&numberOfEvents=${this.numberOfEvents}&basedOn=${this.searchBasedOn}&resultId=${page}`)
         .then((response) => {
           if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
+            showNotification(response.data.error);
           } else {
             this.events = response.data[0];
-            try {
-              if (this.events.length === 0) return;
-              if (this.resultId === 0) this.availableIds = response.data[1];
-              this.resultId++;
-              this.birthDate = new Date(
-                this.events[this.events.length - 1].event_when
-              );
-            } finally {
-              this.finishedLoading = true;
-            }
+            if (this.events.length === 0) return;
+            if (this.resultId === 0) this.availableIds = response.data[1];
+            this.resultId++;
+            this.birthDate = new Date(
+              this.events[this.events.length - 1].event_when
+            );
           }
         })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
+        .catch((err) => {
+          showAPIError(err);
+        }).finally(() => {
           this.finishedLoading = true;
-        });
+      });
     },
   },
 });

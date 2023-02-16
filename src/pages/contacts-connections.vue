@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="column q-pa-md items-center">
     <q-icon
       class="q-my-xs q-mx-xs cursor-pointer"
       name="arrow_back_ios"
@@ -44,6 +44,7 @@ import { whatsnextStore } from 'src/stores/whatsnextStore';
 import { api } from 'src/boot/axios';
 import { IContact } from 'src/models/interfaces/IContact';
 import { date } from 'quasar';
+import {showAPIError, showNotification} from 'src/utils/utils';
 export default defineComponent({
   name: 'contacts-connections',
   setup() {
@@ -70,22 +71,14 @@ export default defineComponent({
         .get('/contact',)
         .then((response) => {
           if (response.data.error) {
-            this.$q.notify({
-              message: response.data.error,
-            });
+            showNotification(response.data.error);
           } else {
             this.contactsList = response.data;
-            this.doneLoading = true;
           }
         })
-        .catch((error) => {
-          console.log(error);
-          const err = error.response?.data
-            ? error.response?.data.error
-            : error.message;
-          this.$q.notify({
-            message: err,
-          });
+        .catch((err) => {
+          showAPIError(err);
+        }).finally(() => {
           this.doneLoading = true;
         });
     },
