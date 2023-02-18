@@ -1,11 +1,5 @@
 <template>
   <q-page class="column q-pa-md items-center">
-    <q-icon
-      class="q-my-xs q-mx-xs cursor-pointer"
-      name="arrow_back_ios"
-      @click="goBack()"
-      ><q-tooltip>Back</q-tooltip></q-icon
-    >
     <div class="row">
       <div class="q-my-sm">Search for similar people based on</div>
       <q-radio
@@ -53,8 +47,8 @@
       /><br />
       Due to privacy, the other side's information is not disclosed. You can ask
       to connect via email.<br /><b
-        >Notice: When asking to connect, your name/email will be visible to the other
-        side.</b
+        >Notice: When asking to connect, your name/email will be visible to the
+        other side.</b
       >
     </q-form>
 
@@ -93,7 +87,7 @@
       />
     </q-timeline>
     <q-inner-loading :showing="!finishedLoading">
-      <q-spinner-gears size="50px" color="primary" />
+      <q-spinner-hourglass size="50px" color="primary" />
     </q-inner-loading>
   </q-page>
 </template>
@@ -106,7 +100,7 @@ import { whatsnextStore } from 'src/stores/whatsnextStore';
 import { IEvent } from 'src/models/interfaces/IEvent';
 import { SearchBasedOnEnum } from 'src/models/enums/SearchBasedOnEnum';
 import { date } from 'quasar';
-import {showAPIError, showNotification} from 'src/utils/utils';
+import { showAPIError, showNotification } from 'src/utils/utils';
 
 export default defineComponent({
   name: 'search-similar',
@@ -138,13 +132,14 @@ export default defineComponent({
   methods: {
     sendContact() {
       api
-        .post(
-          `/contact/${this.events[0].id}/0`)
+        .post(`/contact/${this.events[0].id}/0`)
         .then((response) => {
           if (response.data.error) {
             showNotification(response.data.error);
           } else {
-            showNotification("Your request was sent, now it's up to the other side whether to reply");
+            showNotification(
+              "Your request was sent, now it's up to the other side whether to reply"
+            );
           }
         })
         .catch((err) => {
@@ -175,9 +170,6 @@ export default defineComponent({
         ')'
       );
     },
-    goBack() {
-      this.router.push({ name: 'timeline' });
-    },
     initSearchSimilar() {
       this.resultId = 0;
       this.searchSimilar();
@@ -187,7 +179,8 @@ export default defineComponent({
       let page = this.resultId === 0 ? 0 : this.availableIds[this.resultId];
       api
         .get(
-          `/user/similar?yearsDifference=${this.yearsDifference}&numberOfEvents=${this.numberOfEvents}&basedOn=${this.searchBasedOn}&resultId=${page}`)
+          `/user/similar?yearsDifference=${this.yearsDifference}&numberOfEvents=${this.numberOfEvents}&basedOn=${this.searchBasedOn}&resultId=${page}`
+        )
         .then((response) => {
           if (response.data.error) {
             showNotification(response.data.error);
@@ -203,9 +196,10 @@ export default defineComponent({
         })
         .catch((err) => {
           showAPIError(err);
-        }).finally(() => {
+        })
+        .finally(() => {
           this.finishedLoading = true;
-      });
+        });
     },
   },
 });

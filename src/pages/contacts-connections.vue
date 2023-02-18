@@ -1,18 +1,15 @@
 <template>
   <q-page class="column q-pa-md items-center">
-    <q-icon
-      class="q-my-xs q-mx-xs cursor-pointer"
-      name="arrow_back_ios"
-      @click="goBack()"
-      ><q-tooltip>Back</q-tooltip></q-icon
-    >Your connection requests
-    <q-icon
-      class="cursor-pointer"
-      name="refresh"
-      size="sm"
-      @click="getContactsList()"
-      ><q-tooltip>Refresh</q-tooltip></q-icon
-    >
+    <div class="row no-wrap">
+      Your connection requests
+      <q-icon
+        class="q-mx-md cursor-pointer"
+        name="refresh"
+        size="sm"
+        @click="getContactsList()"
+        ><q-tooltip>Refresh</q-tooltip></q-icon
+      >
+    </div>
     <q-list v-show="doneLoading">
       <q-item v-for="item in contactsList" v-bind:key="item.id">
         <q-item-section>
@@ -32,7 +29,7 @@
       </q-item>
     </q-list>
     <q-inner-loading :showing="!doneLoading">
-      <q-spinner-gears size="50px" color="primary" />
+      <q-spinner-hourglass size="50px" color="primary" />
     </q-inner-loading>
   </q-page>
 </template>
@@ -44,7 +41,7 @@ import { whatsnextStore } from 'src/stores/whatsnextStore';
 import { api } from 'src/boot/axios';
 import { IContact } from 'src/models/interfaces/IContact';
 import { date } from 'quasar';
-import {showAPIError, showNotification} from 'src/utils/utils';
+import { showAPIError, showNotification } from 'src/utils/utils';
 export default defineComponent({
   name: 'contacts-connections',
   setup() {
@@ -62,13 +59,10 @@ export default defineComponent({
     showContactTime(contactTime: Date) {
       return date.formatDate(contactTime, 'YYYY-MM-DD');
     },
-    goBack() {
-      this.router.push({ name: 'timeline' });
-    },
     getContactsList() {
       this.doneLoading = false;
       api
-        .get('/contact',)
+        .get('/contact')
         .then((response) => {
           if (response.data.error) {
             showNotification(response.data.error);
@@ -78,7 +72,8 @@ export default defineComponent({
         })
         .catch((err) => {
           showAPIError(err);
-        }).finally(() => {
+        })
+        .finally(() => {
           this.doneLoading = true;
         });
     },

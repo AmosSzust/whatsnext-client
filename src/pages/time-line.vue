@@ -1,28 +1,5 @@
 <template>
   <q-page class="column q-pa-md items-center">
-    <div class="row">
-      <q-icon
-        class="q-mx-xs cursor-pointer"
-        name="edit"
-        @click="setFullName()"
-        size="sm"
-        ><q-tooltip>Update your name</q-tooltip></q-icon
-      >
-      <q-icon
-        class="q-mx-xs cursor-pointer"
-        name="search"
-        @click="goSearch()"
-        size="sm"
-        ><q-tooltip>Search for similar people</q-tooltip></q-icon
-      >
-      <q-icon
-        class="q-mx-xs cursor-pointer"
-        name="contact_support"
-        @click="goContacts()"
-        size="sm"
-        ><q-tooltip>View connection requests</q-tooltip></q-icon
-      >
-    </div>
     <q-timeline color="secondary" v-if="finishedLoading" layout="loose">
       <q-timeline-entry
         v-for="event in events"
@@ -39,13 +16,32 @@
             @click="handleEvent(event.event_name, event.id)"
           ><q-tooltip>{{
               event.event_name === 'Birth' ? 'Edit' : 'Delete this event'
-            }}</q-tooltip></q-icon
+            }}</q-tooltip>
+
+            <q-popup-proxy
+              v-if="event.event_name === 'Birth'"
+              cover
+              transition-show="scale"
+              transition-hide="scale"
+              @hide="editBirthEvent(event.event_when)"
+            >
+              <q-date
+                v-model="event.event_when"
+                mask="YYYY-MM-DD"
+              >
+                <div class="row items-center justify-end">
+                  <q-btn v-close-popup label="Close" color="primary" flat />
+                </div>
+              </q-date>
+            </q-popup-proxy>
+
+          </q-icon
           >
         </template>
       </q-timeline-entry>
     </q-timeline>
     <q-inner-loading :showing="!finishedLoading">
-      <q-spinner-gears size="50px" color="primary" />
+      <q-spinner-hourglass size="50px" color="primary" />
     </q-inner-loading>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="accent" @click="addEventPopupShow = true"
@@ -91,33 +87,42 @@
             </q-item>
           </template>
         </q-select>
-        <q-input
-          v-model="eventWhen"
-          mask="####-##-##"
-          hint="The year is what's important"
-        >
-          <template v-slot:append>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                cover
-                transition-show="scale"
-                transition-hide="scale"
-              >
-                <q-date
-                  v-model="eventWhen"
-                  mask="YYYY-MM-DD"
-                  today-btn
-                  :options="eventOptions"
+        <div class="row no-wrap">
+          <q-input
+            v-model="eventWhen"
+            mask="####-##-##"
+            hint="The year is what's important"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy
+                  cover
+                  transition-show="scale"
+                  transition-hide="scale"
                 >
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
-                  </div>
-                </q-date>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
+                  <q-date
+                    v-model="eventWhen"
+                    mask="YYYY-MM-DD"
+                    today-btn
+                    :options="eventOptions"
+                  >
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="Close" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+          <q-space/>
+          <q-toggle
+            v-model="privateEvent"
+            color="primary"
+            label="Private"
+            keep-color
+          />
 
+        </div>
         <q-input
           v-model="notes"
           type="textarea"
@@ -143,7 +148,7 @@ import { defineComponent, ref } from 'vue';
 import { date } from 'quasar';
 import { ILifeEvent } from 'src/models/interfaces/ILifeEvent';
 import { useRouter } from 'vue-router';
-import {bus, showAPIError, showNotification} from 'src/utils/utils';
+import {showAPIError, showNotification} from 'src/utils/utils';
 export default defineComponent({
   name: 'time-line',
 
@@ -166,6 +171,7 @@ export default defineComponent({
       eventNameOptions,
       store,
       eventWhen: ref<string>(new Date().toISOString().substring(0, 10)),
+      privateEvent: ref<boolean>(false),
       birthDate,
       router,
       notes: ref(''),
@@ -183,47 +189,24 @@ export default defineComponent({
       const diff = (dt2.getTime() - dt1.getTime()) / 1000 / 60 / 60 / 24;
       return Math.trunc(diff / 365.25);
     },
-    goContacts() {
-      this.router.push({ name: 'contacts' });
-    },
-    goSearch() {
-      this.router.push({ name: 'search' });
-    },
     handleEvent(eventName: string, eventId: number) {
       if (eventName !== 'Birth') this.deleteEvent(eventId);
-      else this.editBirthEvent();
     },
-    editBirthEvent() {
-      this.$q
-        .dialog({
-          title: 'Update your birthdate',
-          message: 'What is your birthdate (yyyy-mm-dd)?',
-          prompt: {
-            model: '',
-            type: 'text',
-          },
-          cancel: true,
-        })
-        .onOk((data) => {
-          if (isNaN(Date.parse(data))) {
-            showNotification('You entered an invalid date');
+    editBirthEvent(birthWhen: Date) {
+      api
+        .put(
+          '/user/birthdate',
+          { birthDate: date.formatDate(birthWhen, 'YYYY-MM-DD') })
+        .then((response) => {
+          if (response.data.error) {
+            showNotification(response.data.error);
           } else {
-            api
-              .put(
-                '/user/birthdate',
-                { birthDate: data })
-              .then((response) => {
-                if (response.data.error) {
-                  showNotification(response.data.error);
-                } else {
-                  showNotification('Your birthdate was updated');
-                  this.getLifeEvents();
-                }
-              })
-              .catch((err) => {
-                showAPIError(err);
-              });
+            showNotification('Your birthdate was updated');
+            this.getLifeEvents();
           }
+        })
+        .catch((err) => {
+          showAPIError(err);
         });
     },
     deleteEvent(eventId: number) {
@@ -262,6 +245,7 @@ export default defineComponent({
               id: this.eventData?.id,
               description: this.notes,
               event_when: this.eventWhen,
+              private: this.privateEvent
             })
           .then((response) => {
             if (response.data.error) {
@@ -317,39 +301,6 @@ export default defineComponent({
         })
         .catch((err) => {
           showAPIError(err);
-        });
-    },
-    setFullName() {
-      this.$q
-        .dialog({
-          title: 'Update your name',
-          message: 'What is your name?',
-          prompt: {
-            model: '',
-            type: 'text',
-          },
-          cancel: true,
-        })
-        .onOk((data) => {
-          if (data.trim() === '') {
-            showNotification('Your name is missing');
-          } else {
-            api
-              .put(
-                '/user/name',
-                { full_name: data })
-              .then((response) => {
-                if (response.data.error) {
-                  showNotification(response.data.error);
-                } else {
-                  showNotification('Your name was updated');
-                  bus.emit('updateFullName');
-                }
-              })
-              .catch((err) => {
-                showAPIError(err);
-              });
-          }
         });
     },
   },

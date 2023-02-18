@@ -123,7 +123,7 @@ import { ref } from 'vue';
 import { QInput } from 'quasar';
 import { useRouter } from 'vue-router';
 import { whatsnextStore } from 'stores/whatsnextStore';
-import {showAPIError, showNotification, validateEmail} from 'src/utils/utils';
+import {bus, showAPIError, showNotification, validateEmail} from 'src/utils/utils';
 
 export default defineComponent({
   name: 'loginPage',
@@ -211,6 +211,7 @@ export default defineComponent({
               } else {
                 const store = whatsnextStore();
                 store.token = response.data.token;
+                bus.emit('updateFullName');
                 this.router.push({name: 'timeline'});
               }
             } else {
