@@ -14,7 +14,7 @@
             class="q-mb-xs q-mx-xs cursor-pointer"
             :name="event.event_name === 'Birth' ? 'edit' : 'delete_forever'"
             @click="handleEvent(event.event_name, event.id)"
-          ><q-tooltip>{{
+            ><q-tooltip>{{
               event.event_name === 'Birth' ? 'Edit' : 'Delete this event'
             }}</q-tooltip>
 
@@ -26,17 +26,16 @@
               @hide="editBirthEvent(event.event_when)"
             >
               <q-date
-                v-model="event.event_when"
+                v-model="birthDateWhen"
                 mask="YYYY-MM-DD"
+                :options="birthOptions"
               >
                 <div class="row items-center justify-end">
                   <q-btn v-close-popup label="Close" color="primary" flat />
                 </div>
               </q-date>
             </q-popup-proxy>
-
-          </q-icon
-          >
+          </q-icon>
         </template>
       </q-timeline-entry>
     </q-timeline>
@@ -114,14 +113,13 @@
               </q-icon>
             </template>
           </q-input>
-          <q-space/>
+          <q-space />
           <q-toggle
             v-model="privateEvent"
             color="primary"
             label="Private"
             keep-color
           />
-
         </div>
         <q-input
           v-model="notes"
@@ -148,7 +146,7 @@ import { defineComponent, ref } from 'vue';
 import { date } from 'quasar';
 import { ILifeEvent } from 'src/models/interfaces/ILifeEvent';
 import { useRouter } from 'vue-router';
-import {showAPIError, showNotification} from 'src/utils/utils';
+import { showAPIError, showNotification } from 'src/utils/utils';
 export default defineComponent({
   name: 'time-line',
 
@@ -156,10 +154,16 @@ export default defineComponent({
     const router = useRouter();
     const store = whatsnextStore();
     let eventNameOptions: string[] = [];
-    let birthDate = ref(new Date());
+    let birthDate = ref<Date>(new Date());
     function eventOptions(date: string) {
       return (
-        date >= birthDate.value.toISOString().substring(0, 10).replace(/-/g, '/') &&
+        date >=
+          birthDate.value.toISOString().substring(0, 10).replace(/-/g, '/') &&
+        date <= new Date().toISOString().substring(0, 10).replace(/-/g, '/')
+      );
+    }
+    function birthOptions(date: string) {
+      return (
         date <= new Date().toISOString().substring(0, 10).replace(/-/g, '/')
       );
     }
@@ -177,6 +181,8 @@ export default defineComponent({
       notes: ref(''),
       full_name: ref(''),
       eventOptions,
+      birthOptions,
+      birthDateWhen: ref<string>(''),
     };
   },
   computed: {
@@ -192,22 +198,29 @@ export default defineComponent({
     handleEvent(eventName: string, eventId: number) {
       if (eventName !== 'Birth') this.deleteEvent(eventId);
     },
-    editBirthEvent(birthWhen: Date) {
-      api
-        .put(
-          '/user/birthdate',
-          { birthDate: date.formatDate(birthWhen, 'YYYY-MM-DD') })
-        .then((response) => {
-          if (response.data.error) {
-            showNotification(response.data.error);
-          } else {
-            showNotification('Your birthdate was updated');
-            this.getLifeEvents();
-          }
-        })
-        .catch((err) => {
-          showAPIError(err);
-        });
+    editBirthEvent(birthWhen: string) {
+      birthWhen = birthWhen.substring(0, 10);
+      if (!this.birthDateWhen) {
+        this.birthDateWhen = birthWhen;
+      } else if (this.birthDateWhen === birthWhen) {
+        return;
+      } else {
+        api
+          .put('/user/birthdate', {
+            birthDate: date.formatDate(this.birthDate, 'YYYY-MM-DD'),
+          })
+          .then((response) => {
+            if (response.data.error) {
+              showNotification(response.data.error);
+            } else {
+              showNotification('Your birthdate was updated');
+              this.getLifeEvents();
+            }
+          })
+          .catch((err) => {
+            showAPIError(err);
+          });
+      }
     },
     deleteEvent(eventId: number) {
       this.$q
@@ -239,14 +252,12 @@ export default defineComponent({
         showNotification('Please select a life event');
       } else {
         api
-          .post(
-            '/event',
-            {
-              id: this.eventData?.id,
-              description: this.notes,
-              event_when: this.eventWhen,
-              private: this.privateEvent
-            })
+          .post('/event', {
+            id: this.eventData?.id,
+            description: this.notes,
+            event_when: this.eventWhen,
+            private: this.privateEvent,
+          })
           .then((response) => {
             if (response.data.error) {
               showNotification(response.data.error);
@@ -263,11 +274,11 @@ export default defineComponent({
           });
       }
     },
-    getEventDate(eventDate: Date) {
+    getEventDate(eventDate: string) {
       return (
-        date.formatDate(eventDate, 'MMMM DD, YYYY') +
+        date.formatDate(new Date(eventDate), 'MMMM DD, YYYY') +
         ' (Age ' +
-        this.ageFromBirth(eventDate) +
+        this.ageFromBirth(new Date(eventDate)) +
         ')'
       );
     },
@@ -296,6 +307,9 @@ export default defineComponent({
             this.birthDate = new Date(
               this.events[this.events.length - 1].event_when
             );
+            this.birthDateWhen = this.events[
+              this.events.length - 1
+            ].event_when.substring(0, 10);
             this.finishedLoading = true;
           }
         })

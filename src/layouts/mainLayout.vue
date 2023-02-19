@@ -52,7 +52,8 @@
     position="bottom"
     ><q-card class="bg-info">
       <q-card-section>
-        <q-input v-model="fullNameEdit" hint="Your name" autofocus />
+        Settings<q-separator />
+        <q-input dense v-model="fullNameEdit" hint="Your name" autofocus />
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Save" @click="saveSettings()" />

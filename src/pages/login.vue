@@ -3,8 +3,11 @@
     <div class="column items-center">
       <q-img src="logo.png" />
       <br />
-      <q-card class="my-card">
-        <q-form class="q-pa-xl q-pt-xl">
+      <q-card class="shadow-12">
+        <div class="text-weight-bold text-center q-mt-sm">
+          Connect through similar life events
+        </div>
+        <q-form class="q-pa-sm">
           <q-input
             v-model="email"
             ref="emailRef"
@@ -50,7 +53,14 @@
             </template>
           </q-input>
 
-          <q-input filled v-model="birthDate" mask="####-##-##" v-if="newUser">
+          <q-input
+            filled
+            v-model="birthDate"
+            mask="####-##-##"
+            v-if="newUser"
+            label="Birthday"
+            readonly
+          >
             <template v-slot:append>
               <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy
@@ -58,7 +68,11 @@
                   transition-show="scale"
                   transition-hide="scale"
                 >
-                  <q-date v-model="birthDate" mask="YYYY-MM-DD">
+                  <q-date
+                    v-model="birthDate"
+                    mask="YYYY-MM-DD"
+                    :options="birthOptions"
+                  >
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>
@@ -123,7 +137,12 @@ import { ref } from 'vue';
 import { QInput } from 'quasar';
 import { useRouter } from 'vue-router';
 import { whatsnextStore } from 'stores/whatsnextStore';
-import {bus, showAPIError, showNotification, validateEmail} from 'src/utils/utils';
+import {
+  bus,
+  showAPIError,
+  showNotification,
+  validateEmail,
+} from 'src/utils/utils';
 
 export default defineComponent({
   name: 'loginPage',
@@ -131,6 +150,11 @@ export default defineComponent({
 
   setup() {
     const router = useRouter();
+    function birthOptions(date: string) {
+      return (
+        date <= new Date().toISOString().substring(0, 10).replace(/-/g, '/')
+      );
+    }
 
     return {
       password: ref(''),
@@ -147,6 +171,7 @@ export default defineComponent({
       disableLetMeIn: ref(false),
       confirmationCodeRef: ref<QInput>(),
       router,
+      birthOptions,
     };
   },
   methods: {
@@ -188,6 +213,8 @@ export default defineComponent({
         showNotification('Password must have at least 8 characters');
       } else if (this.newUser && this.password !== this.rePassword) {
         showNotification('Passwords do not match');
+      } else if (this.newUser && this.birthDate.length < 10) {
+        showNotification('Invalid birth date');
       } else {
         const command = this.codeSent || !this.newUser ? 'login' : 'register';
         this.disableLetMeIn = true;
@@ -212,10 +239,14 @@ export default defineComponent({
                 const store = whatsnextStore();
                 store.token = response.data.token;
                 bus.emit('updateFullName');
-                this.router.push({name: 'timeline'});
+                this.router.push({ name: 'timeline' });
               }
             } else {
-              showNotification(response.data.error? response.data.error : 'Oops, there was a problem');
+              showNotification(
+                response.data.error
+                  ? response.data.error
+                  : 'Oops, there was a problem'
+              );
             }
           })
           .catch((err) => {

@@ -2,8 +2,8 @@ import { boot } from 'quasar/wrappers';
 import axios from 'axios';
 import { whatsnextStore } from 'stores/whatsnextStore';
 
-const baseURL = 'http://localhost:3000/api/';
-//const baseURL = 'https://stockdiv.com:8447/api';
+//const baseURL = 'http://localhost:3000/api/';
+const baseURL = 'https://stockdiv.com:8447/api';
 
 const api = axios.create({ baseURL: baseURL });
 api.interceptors.request.use(

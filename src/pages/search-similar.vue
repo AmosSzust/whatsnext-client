@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column q-pa-md items-center">
+  <q-page class="column q-pa-md items-center text-center">
     <div class="row">
       <div class="q-my-sm">Search for similar people based on</div>
       <q-radio
@@ -18,8 +18,9 @@
       />
     </div>
     <q-form @submit.prevent="initSearchSimilar">
-      <div class="q-gutter-sm" style="max-width: 300px">
+      <div class="q-gutter-sm row no-wrap">
         <q-input
+          dense
           v-model.number="numberOfEvents"
           type="number"
           label="Number of events"
@@ -29,28 +30,30 @@
             (val) =>
               parseInt(val) > 0 || 'You must have at least one event in common',
           ]"
-        />
+        /><q-separator vertical />
         <q-input
+          dense
           v-model.number="yearsDifference"
           type="number"
-          label="Years difference (before/after)"
+          label="Years (before/after)"
           :rules="[
             (val) => parseInt(val) > -1 || 'The value should be zero and above',
           ]"
         />
+        <q-btn
+          dense
+          color="primary"
+          label="Search"
+          class="q-my-sm shadow-8"
+          type="submit"
+        />
       </div>
-      <q-btn
-        color="primary"
-        label="Search"
-        class="q-my-sm"
-        type="submit"
-      /><br />
-      Due to privacy, the other side's information is not disclosed. You can ask
-      to connect via email.<br /><b
-        >Notice: When asking to connect, your name/email will be visible to the
-        other side.</b
-      >
     </q-form>
+    Due to privacy concerns, the other side's information is not disclosed. You
+    can ask to connect via email.<br /><b
+      >Notice: When asking to connect, your name/email will be visible to the
+      other side.</b
+    >
 
     <div class="row" v-show="events.length > 0">
       <q-btn
@@ -162,11 +165,11 @@ export default defineComponent({
       //return date.getDateDiff(eventWhen, this.birthDate, 'years');
       return this.diffYears(new Date(eventWhen), this.birthDate);
     },
-    getEventDate(eventDate: Date) {
+    getEventDate(eventDate: string) {
       return (
-        date.formatDate(eventDate, 'MMMM DD, YYYY') +
+        date.formatDate(new Date(eventDate), 'MMMM DD, YYYY') +
         ' (Age ' +
-        this.ageFromBirth(eventDate) +
+        this.ageFromBirth(new Date(eventDate)) +
         ')'
       );
     },
